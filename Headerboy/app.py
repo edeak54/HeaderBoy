@@ -66,22 +66,22 @@ def run_scan_script():
         print("[Scan] Running scan...")
 
         if os.path.exists(INPUT_FILE):
-            df = pd.read_excel(INPUT_FILE)  # Load URLs from Excel
-            urls = df.iloc[:, 0].dropna().tolist()  # Ambil URL dari kolom pertama
-
-            if urls:
-                update_progress("Starting scan...", 0, len(urls))  # 🔹 Update awal
-                scan_urls(urls)  # 🔹 Jalankan scanning dengan update progress
-            else:
-                print("[Scan] No URLs found in the input file.")
+            process = subprocess.Popen([sys.executable, "main.py", INPUT_FILE])
+            
+            # Loop to check if force stop is requested
+            while process.poll() is None:  # Process is still running
+                if force_stop:
+                    process.terminate()  # Forcefully stop the scan
+                    print("[Scan] Force stop triggered. Scan terminated.")
+                    update_scan_status("stopped")
+                    return
+                time.sleep(1)  # Check every second
 
         else:
             print("[Scan] No input file found. Skipping.")
 
         update_scan_status("completed")
-        update_progress("Scan completed", 0, 0)  # 🔹 Reset progress setelah selesai
         print("[Scan] Scan completed.")
-
 
 @app.route("/scan_progress")
 def scan_progress():
