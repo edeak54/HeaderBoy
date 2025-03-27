@@ -2,6 +2,17 @@ import pandas as pd
 import subprocess
 import re
 import sys
+import json
+
+def update_progress(current_url, scanned, total):
+    """Update progress in a file."""
+    progress_data = {
+        "current_url": current_url,
+        "scanned": scanned,
+        "total": total
+    }
+    with open("scan_progress.txt", "w") as f:
+        json.dump(progress_data, f)
 
 def remove_ansi_codes(text):
     """Remove ANSI color codes from shcheck.py output."""
@@ -25,14 +36,52 @@ def get_headers_using_shcheck(url):
         print(f"shcheck.py request failed for {url}: {e}")
         return ""
 
+def get_set_cookie_headers(url):
+    """Fetch Set-Cookie headers using curl -IL and check configuration."""
+    try:
+        result = subprocess.run(
+            ["curl", "-IL", url], capture_output=True, text=True, timeout=10
+        )
+        headers = result.stdout.lower()  # Convert to lowercase for consistency
+
+        match = re.findall(r'set-cookie:\s*(.*)', headers)
+
+        if not match:
+            return "MISSING", "-"  # No Set-Cookie header found
+
+        set_cookie_value = "; ".join(match)  # Merge multiple Set-Cookie values
+
+        misconfigured_reasons = []
+        if "f5" in set_cookie_value:
+            misconfigured_reasons.append("F5 Informational Disclosure")
+        if "max-age" not in set_cookie_value:
+            misconfigured_reasons.append("No Max-Age")
+        if "secure" not in set_cookie_value:
+            misconfigured_reasons.append("No Secure")
+        if "httponly" not in set_cookie_value:
+            misconfigured_reasons.append("No HttpOnly")
+        if "domain" not in set_cookie_value:
+            misconfigured_reasons.append("No Domain")
+
+        if misconfigured_reasons:
+            return "MSCONFIGURED", ", ".join(misconfigured_reasons)
+
+        return "PRESENT", set_cookie_value  # Fully compliant
+
+    except subprocess.TimeoutExpired:
+        return "TIMEOUT", "Set-Cookie check timed out"
+    except Exception as e:
+        return "ERROR", str(e)
 
 def normalize_url(domain):
     """Ensure the URL has a scheme (http or https), preserving if already present."""
     if domain.startswith(("http://", "https://")):
-        return domain  # Keep as is if it already has a scheme
+        return domain
     return f"https://{domain}"  # Default to HTTPS if missing
 
 def check_security_headers(domain):
+
+    
     """Analyze security headers and handle timeouts properly."""
     url = normalize_url(domain)
     headers_text = get_headers_using_shcheck(url)
@@ -68,7 +117,7 @@ def check_security_headers(domain):
         present_marker = f"[*] Header {header} is present!"
         insecure_marker = f"[!] Insecure header {header} is set!"
         missing_marker = f"[!] Missing security header: {header}"
-       
+
         if present_marker in headers_text:
             present_headers.append(header)
             match = re.search(rf"\[\*\] Header {header} is present!\s*\(Value:\s*(.*?)\)", headers_text)
@@ -93,6 +142,17 @@ def check_security_headers(domain):
         else:
             missing_headers.append(header)
 
+    # 🔹 Check Set-Cookie using curl
+    set_cookie_status, set_cookie_value = get_set_cookie_headers(url)
+
+    # 🔹 Merge Set-Cookie with other headers
+    if set_cookie_status == "PRESENT":
+        present_headers.append("Set-Cookie")
+    elif set_cookie_status == "MISSING":
+        missing_headers.append("Set-Cookie")
+    elif set_cookie_status == "MSCONFIGURED":
+        misconfigured_headers["Set-Cookie"] = set_cookie_value
+
     return [
         domain,
         url,
@@ -101,19 +161,22 @@ def check_security_headers(domain):
         ", ".join([f"{h}: {v}" for h, v in misconfigured_headers.items()]) if misconfigured_headers else "-"
     ]
 
-
 def process_excel(file_path):
     """Process an Excel file with a list of domains."""
     df = pd.read_excel(file_path)
     results = []
+    total_domains = len(df)
 
-    for domain in df.iloc[:, 0]:  # Assume first column contains domains
+    for index, domain in enumerate(df.iloc[:, 0], start=1):  # Assume first column contains domains
+        # Update progress before scanning each domain
+        update_progress(domain.strip(), index, total_domains)
+        
         results.append(check_security_headers(domain.strip()))
 
     result_df = pd.DataFrame(results, columns=[
         "Domain", "Used URL", "Present Headers", "Missing Headers", "Misconfigured Headers"
     ])
-   
+
     output_file = "scan_results.xlsx"
     result_df.to_excel(output_file, index=False)
     print(f"Results saved to {output_file}")

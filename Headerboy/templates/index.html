@@ -288,10 +288,10 @@
         <div class="loading-container" id="loading">
             <div class="spinner"></div>
             <span>Processing...</span>
-            <p id="progress-text">
-                Scanning: <span id="current-url">N/A</span> 
-                (<span id="scanned-count">0</span>/<span id="total-count">0</span>)
-            </p>
+            <div id="progress-info" style="text-align: center; margin-top: 10px;">
+                <span>Scanning: <span id="current-url">N/A</span></span>
+                <span>Progress: <span id="scanned-count">0</span>/<span id="total-count">0</span></span>
+            </div>
         </div>
 
         <div class="table-container">
@@ -389,28 +389,36 @@
         }
 
         function checkScanStatus() {
-            function poll() {
-                fetch("/scan_status")
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status === "scanning") {
-                            fetch("/scan_progress")
-                                .then(res => res.json())
-                                .then(progress => {
-                                    document.getElementById("current-url").innerText = progress.current_url;
-                                    document.getElementById("scanned-count").innerText = progress.scanned;
-                                    document.getElementById("total-count").innerText = progress.total;
-                                })
-                                .catch(console.error);
-                            setTimeout(poll, 2000);
-                        } else {
-                            location.reload();
-                        }
-                    })
-                    .catch(console.error);
-            }
-            poll();
+        function poll() {
+            fetch("/scan_status")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "scanning") {
+                        // Fetch and update progress
+                        fetch("/scan_progress")
+                            .then(res => res.json())
+                            .then(progress => {
+                                document.getElementById("current-url").innerText = progress.current_url;
+                                document.getElementById("scanned-count").innerText = progress.scanned;
+                                document.getElementById("total-count").innerText = progress.total;
+                            })
+                            .catch(console.error);
+                        
+                        // Continue polling every 2 seconds
+                        setTimeout(poll, 2000);
+                    } else {
+                        // Scan completed, reload page
+                        document.getElementById("scanSuccessMessage").style.display = "block";
+                        showLoading(false);
+                        disableButtons(false);
+                        location.reload();
+                    }
+                })
+                .catch(console.error);
         }
+        poll();
+    }
     </script>
+    
 </body>
 </html>

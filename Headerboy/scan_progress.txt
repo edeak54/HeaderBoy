@@ -1,1 +1,1 @@
-{"current_url": "Scan completed", "scanned": 0, "total": 0}
+{"current_url": "202.6.212.93", "scanned": 5, "total": 5}

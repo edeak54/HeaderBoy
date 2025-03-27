@@ -12,7 +12,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 INPUT_FILE = "current_input.xlsx"
 RESULT_FILE = "scan_results.xlsx"
-SCAN_INTERVAL = 3600  # Time in seconds (adjust as needed)
+SCAN_INTERVAL = 86400  # Time in seconds (adjust as needed)
 last_scan_timestamp = time.time()
 scan_lock = threading.Lock()
 
@@ -91,7 +91,6 @@ def scan_progress():
             return jsonify(json.load(f))
     except FileNotFoundError:
         return jsonify({"current_url": "N/A", "scanned": 0, "total": 0})
-
 
 def auto_scan():
     """Automatically trigger scans at set intervals."""
