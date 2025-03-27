@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeaderBoy | Security Headers Audit</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #121212;
+            --secondary-bg: #1e1e2f;
+            --accent-color: #00eaff;
+            --text-color: #ffffff;
+            --success-color: #28a745;
+            --warning-color: #ffeb3b;
+            --danger-color: #ff4d4d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Arial', sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--secondary-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 238, 255, 0.2);
+        }
+
+        .header-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            font-size: 3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header-subtext {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        h1 i {
+            color: var(--accent-color);
+            font-size: 2.5rem;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            gap: 10px;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-import { 
+            background: var(--success-color); 
+            color: white; 
+        }
+        .btn-import:hover { 
+            background: #218838; 
+        }
+
+        .btn-run { 
+            background: var(--accent-color); 
+            color: black; 
+        }
+        .btn-run:hover { 
+            background: #00c4cc; 
+        }
+
+        .btn-export { 
+            background: #007bff; 
+            color: white; 
+        }
+        .btn-export:hover { 
+            background: #0056b3; 
+        }
+
+        .btn:disabled {
+            background: #444;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        #timer {
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--warning-color);
+            margin-bottom: 1rem;
+        }
+
+        .loading-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid var(--warning-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: var(--secondary-bg);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: var(--accent-color);
+            color: black;
+            text-transform: uppercase;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        tr:hover {
+            background: rgba(0, 238, 255, 0.1);
+        }
+
+        .present { 
+            background-color: var(--success-color) !important; 
+            color: white; 
+        }
+        .misconfigured { 
+            background-color: var(--warning-color) !important; 
+            color: black; 
+        }
+        .missing { 
+            background-color: var(--danger-color) !important; 
+            color: white; 
+        }
+
+        #scanSuccessMessage {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--success-color);
+            margin: 1rem 0;
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                width: 98%;
+                padding: 1rem;
+            }
+
+            .stats-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .header-subtext {
+                font-size: 0.9rem;
+            }
+        }
+
+        #fileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <h1>
+                <i class="fas fa-shield-alt"></i>
+                HeaderBoy
+                <i class="fas fa-shield-alt"></i>
+            </h1>
+            <div class="header-subtext">
+                ez security header vulnerability scanner
+            </div>
+        </div>
+
+        <div id="scanSuccessMessage" style="display: none;">
+            ✅ Scan Successful!
+        </div>
+
+        <div class="stats-container">
+            <p><strong>Total Results:</strong> {{ total_results }}</p>
+            <p><strong>Last Scanned:</strong> {{ last_scanned }}</p>
+        </div>
+
+        <p id="timer">Next scan in: {{ next_scan_in }}s</p>
+
+        <div class="btn-group">
+            <button class="btn btn-import" onclick="selectFile()">
+                <i class="fas fa-upload"></i>Import File
+            </button>
+            <input type="file" id="fileInput" onchange="confirmImport(event)" />
+            <button class="btn btn-run" onclick="runScan()">
+                <i class="fas fa-play"></i>Run Scan
+            </button>
+            <button class="btn btn-export" onclick="location.href='/export'">
+                <i class="fas fa-download"></i>Export File
+            </button>
+        </div>
+
+        <div class="loading-container" id="loading">
+            <div class="spinner"></div>
+            <span>Processing...</span>
+            <p id="progress-text">
+                Scanning: <span id="current-url">N/A</span> 
+                (<span id="scanned-count">0</span>/<span id="total-count">0</span>)
+            </p>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        {% for header in headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                                <td class="{{ 'present' if value == 'Present' else 'misconfigured' if value == 'Misconfigured' else 'missing' if value == 'Missing' else '' }}">
+                                    {{ value }}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="{{ headers|length }}">No data available</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let timeLeft = {{ next_scan_in }};
+        const timerElem = document.getElementById("timer");
+        const loadingElem = document.getElementById("loading");
+
+        function updateTimer() {
+            if (timeLeft > 0) {
+                timerElem.innerText = `Next scan in: ${timeLeft}s`;
+                timeLeft--;
+            } else {
+                location.reload();
+            }
+        }
+        setInterval(updateTimer, 1000);
+
+        function disableButtons(disable = true) {
+            document.querySelectorAll(".btn").forEach(btn => btn.disabled = disable);
+        }
+
+        function showLoading(show = true) {
+            loadingElem.style.display = show ? "flex" : "none";
+        }
+
+        function selectFile() {
+            document.getElementById("fileInput").click();
+        }
+
+        function confirmImport(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            let confirmUpload = confirm(`Are you sure you want to import "${file.name}"?`);
+            if (confirmUpload) {
+                uploadFile(file);
+            }
+        }
+
+        function uploadFile(file) {
+            let formData = new FormData();
+            formData.append("file", file);
+
+            showLoading(true);
+            disableButtons();
+
+            fetch("/import", { method: "POST", body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.status === "imported" ? "File imported! Running scan..." : `Error: ${data.message}`);
+                    if (data.status === "imported") checkScanStatus();
+                    else enableButtons();
+                })
+                .catch(console.error);
+        }
+
+        function runScan() {
+            showLoading(true);
+            disableButtons();
+
+            fetch("/run_scan", { method: "POST" })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.status === "started" ? "Scan started!" : "Scan already running!");
+                    if (data.status === "started") checkScanStatus();
+                    else enableButtons();
+                })
+                .catch(console.error);
+        }
+
+        function checkScanStatus() {
+            function poll() {
+                fetch("/scan_status")
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === "scanning") {
+                            fetch("/scan_progress")
+                                .then(res => res.json())
+                                .then(progress => {
+                                    document.getElementById("current-url").innerText = progress.current_url;
+                                    document.getElementById("scanned-count").innerText = progress.scanned;
+                                    document.getElementById("total-count").innerText = progress.total;
+                                })
+                                .catch(console.error);
+                            setTimeout(poll, 2000);
+                        } else {
+                            location.reload();
+                        }
+                    })
+                    .catch(console.error);
+            }
+            poll();
+        }
+    </script>
+</body>
+</html>
