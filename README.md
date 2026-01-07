@@ -29,36 +29,3 @@
 2. **Access:** Open `http://127.0.0.1:5000` in your browser.
 3. **Scan:** Upload an `.xlsx` file of domains and hit **Run Scan**.
 4. **Monitor:** Watch live progress and export your `scan_results.xlsx` once complete.
-
----
-
-## 💼 Upwork Portfolio Description (The "Pro" Version)
-
-**Title:** Full-Stack Security Automation Dashboard (Python/Flask)
-**Role:** Full-Stack Security Developer
-
-**The Project:**
-I developed a comprehensive security header auditing suite that automates the identification of missing security configurations (HSTS, CSP, X-Frame-Options) across large-scale domain lists.
-
-**Key Accomplishments:**
-⚙️ **Concurrency & Locking:** Implemented a thread-safe scanning engine that handles background tasks without UI freezing.
-🔌 **API-First Design:** Built JSON endpoints to provide live scanning updates to the frontend.
-📁 **Enterprise Data Handling:** Built a robust import/export system using Pandas to handle bulk Excel data.
-🛡️ **Subprocess Control:** Integrated low-level system calls to manage and terminate external security tools safely via a web interface.
-
-**Deliverables:**
-
-* Full Flask Source Code (Modular & Documented).
-* Threading & Process Management Logic.
-* Excel-to-UI Data Pipeline.
-
----
-
-## 🎯 Profile 1 & 2 Skills Update
-
-Since you used **Flask**, **Threading**, and **Subprocess**, you need to add these tags to your Upwork profiles:
-
-* **Profile 1 (Security Engineer):** Add `Vulnerability Management`, `Security Dashboards`, and `DevSecOps`.
-* **Profile 2 (Scripting/Automation):** Add `Flask`, `Web Application`, `Concurrent Programming`, and `Pandas`.
-
-**Would you like me to create a "Project Catalog" description for this? (This is the feature where clients can buy this specific dashboard from you for a fixed price).**
