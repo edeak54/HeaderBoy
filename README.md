@@ -3,11 +3,17 @@
 ### ✨ Advanced Features
 
 🚀 **Flask Web Dashboard:** A clean UI to manage scans without touching the terminal.
+
 🔄 **Smart Threading:** Background scan execution with a `threading.Lock` to prevent process collision.
+
 🛑 **Force Stop Integration:** Ability to terminate active subprocesses safely via the UI.
+
 📅 **Automated Scheduling:** Built-in auto-scan intervals for continuous infrastructure monitoring.
+
 📊 **Excel Integration:** Seamlessly import target lists and export results via Pandas.
+
 🛰️ **Live Progress Tracking:** Real-time JSON API endpoints to monitor scan status (`/scan_progress`).
+
 
 ### 🛠️ Technical Stack
 
