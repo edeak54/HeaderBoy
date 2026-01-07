@@ -1,3 +1,5 @@
+<img width="1420" height="936" alt="hb" src="https://github.com/user-attachments/assets/3f57e0d0-f50d-4050-beb3-f10122632e27" />
+
 **HeaderBoy** is an automated, web-based security header auditing platform. It transforms the powerful `shcheck` engine into a full-scale monitoring dashboard, allowing security teams to manage batch scans, track progress in real-time, and export compliance-ready reports.
 
 ### ✨ Advanced Features
